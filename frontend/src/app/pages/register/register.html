@@ -1,0 +1,154 @@
+<div class="d-flex align-items-center justify-content-center min-vh-100 p-3">
+  <div class="card shadow-sm border-0" style="max-width: 560px; width: 100%">
+    <div class="card-body p-4 p-md-5">
+      <div class="text-center mb-4">
+        <div class="logo-badge mx-auto mb-3"><i class="bi bi-geo-alt-fill"></i></div>
+        <h1 class="h4 mb-1">Créer un compte</h1>
+        <p class="text-muted small mb-0">Trouvez un pro ou proposez vos services près de chez vous</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="soumettre()" novalidate>
+        <div class="btn-group w-100 mb-4" role="group">
+          <input
+            type="radio"
+            class="btn-check"
+            id="role-client"
+            value="client"
+            formControlName="role"
+          />
+          <label class="btn btn-outline-primary" for="role-client">
+            <i class="bi bi-person me-1"></i>Je cherche un service
+          </label>
+
+          <input
+            type="radio"
+            class="btn-check"
+            id="role-prestataire"
+            value="prestataire"
+            formControlName="role"
+          />
+          <label class="btn btn-outline-primary" for="role-prestataire">
+            <i class="bi bi-tools me-1"></i>Je propose mes services
+          </label>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="name">Nom complet</label>
+            <input id="name" type="text" class="form-control" formControlName="name" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="email">Adresse e-mail</label>
+            <input id="email" type="email" class="form-control" formControlName="email" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="telephone">Téléphone</label>
+            <input id="telephone" type="tel" class="form-control" formControlName="telephone" />
+          </div>
+          <div class="col-md-6"></div>
+          <div class="col-md-6">
+            <label class="form-label" for="password">Mot de passe</label>
+            <input id="password" type="password" class="form-control" formControlName="password" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="password_confirmation">Confirmation</label>
+            <input
+              id="password_confirmation"
+              type="password"
+              class="form-control"
+              formControlName="password_confirmation"
+            />
+          </div>
+        </div>
+
+        @if (estPrestataire) {
+          <hr class="my-4" />
+          <h2 class="h6 text-uppercase text-muted mb-3">Votre activité</h2>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="nom_activite">Nom de l'activité</label>
+              <input
+                id="nom_activite"
+                type="text"
+                class="form-control"
+                formControlName="nom_activite"
+                placeholder="Ex : Plomberie Fall &amp; Fils"
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="ville">Ville</label>
+              <input id="ville" type="text" class="form-control" formControlName="ville" />
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="adresse">Adresse</label>
+              <input id="adresse" type="text" class="form-control" formControlName="adresse" />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label d-block">Zone d'intervention</label>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                (click)="utiliserMaPosition()"
+                [disabled]="localisationEnCours()"
+              >
+                @if (localisationEnCours()) {
+                  <span class="spinner-border spinner-border-sm me-1"></span>
+                } @else {
+                  <i class="bi bi-crosshair me-1"></i>
+                }
+                Utiliser ma position actuelle
+              </button>
+              <div class="form-text">
+                Position par défaut : centre de Dakar. Cliquez ci-dessus pour utiliser votre position réelle.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="rayon">Rayon d'intervention (km)</label>
+              <input
+                id="rayon"
+                type="number"
+                min="1"
+                max="100"
+                class="form-control"
+                formControlName="rayon_intervention_km"
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="tarif">Tarif horaire indicatif (FCFA)</label>
+              <input id="tarif" type="number" min="0" class="form-control" formControlName="tarif_horaire_fcfa" />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label d-block">Catégories de service proposées</label>
+              <div class="d-flex flex-wrap gap-2">
+                @for (cat of categories(); track cat.id) {
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    [class.btn-primary]="categorieCochee(cat.id)"
+                    [class.btn-outline-secondary]="!categorieCochee(cat.id)"
+                    (click)="basculerCategorie(cat.id)"
+                  >
+                    <i class="bi {{ cat.icone }} me-1"></i>{{ cat.nom }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <button type="submit" class="btn btn-primary w-100 mt-4" [disabled]="enCours()">
+          @if (enCours()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          Créer mon compte
+        </button>
+      </form>
+
+      <p class="text-center small mt-3 mb-0">
+        Déjà un compte ? <a routerLink="/connexion">Connectez-vous</a>
+      </p>
+    </div>
+  </div>
+</div>

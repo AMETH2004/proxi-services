@@ -1,0 +1,84 @@
+<h1 class="h4 mb-4">
+  @if (auth.estPrestataire()) { Demandes de rendez-vous reçues } @else { Mes rendez-vous }
+</h1>
+
+@if (chargement()) {
+  <div class="text-center py-5"><span class="spinner-border"></span></div>
+} @else if (rendezVous().length === 0) {
+  <div class="alert alert-light border">Aucun rendez-vous pour le moment.</div>
+} @else {
+  <div class="d-flex flex-column gap-3">
+    @for (rdv of rendezVous(); track rdv.id) {
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-semibold">
+                @if (auth.estPrestataire()) {
+                  {{ rdv.client?.name }}
+                } @else {
+                  {{ rdv.prestataire?.nom_activite }}
+                }
+                <span class="text-muted small ms-2">{{ rdv.categorie_service?.nom }}</span>
+              </div>
+              <div class="text-muted small mt-1">
+                <i class="bi bi-calendar-event me-1"></i>{{ rdv.date_heure | date: 'EEEE d MMMM y, HH:mm' }}
+              </div>
+              <div class="text-muted small">
+                <i class="bi bi-geo-alt me-1"></i>{{ rdv.adresse_intervention }}
+              </div>
+              @if (rdv.description_besoin) {
+                <p class="small mt-2 mb-0">{{ rdv.description_besoin }}</p>
+              }
+            </div>
+            <app-statut-rdv-badge [statut]="rdv.statut" />
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            @if (auth.estPrestataire()) {
+              @if (rdv.statut === 'en_attente') {
+                <button class="btn btn-sm btn-outline-danger" (click)="changerStatut(rdv, 'annule')">Refuser</button>
+                <button class="btn btn-sm btn-primary" (click)="changerStatut(rdv, 'confirme')">Confirmer</button>
+              }
+              @if (rdv.statut === 'confirme') {
+                <button class="btn btn-sm btn-outline-danger" (click)="changerStatut(rdv, 'annule')">Annuler</button>
+                <button class="btn btn-sm btn-success" (click)="changerStatut(rdv, 'termine')">Marquer terminé</button>
+              }
+            } @else {
+              @if (rdv.statut === 'en_attente' || rdv.statut === 'confirme') {
+                <button class="btn btn-sm btn-outline-danger" (click)="changerStatut(rdv, 'annule')">Annuler</button>
+              }
+              @if (rdv.statut === 'termine' && !rdv.avis && rdvEnNotation() !== rdv.id) {
+                <button class="btn btn-sm btn-outline-primary" (click)="ouvrirNotation(rdv)">Laisser un avis</button>
+              }
+            }
+          </div>
+
+          @if (rdvEnNotation() === rdv.id) {
+            <div class="border-top pt-3 mt-3">
+              <label class="form-label small">Votre note</label>
+              <div class="btn-group btn-group-sm mb-2 d-block">
+                @for (n of [1, 2, 3, 4, 5]; track n) {
+                  <button
+                    type="button"
+                    class="btn"
+                    [class.btn-warning]="note >= n"
+                    [class.btn-outline-warning]="note < n"
+                    (click)="note = n"
+                  >
+                    <i class="bi bi-star-fill"></i>
+                  </button>
+                }
+              </div>
+              <textarea class="form-control mb-2" rows="2" placeholder="Votre commentaire (optionnel)" [(ngModel)]="commentaire"></textarea>
+              <div class="d-flex justify-content-end gap-2">
+                <button class="btn btn-sm btn-outline-secondary" (click)="rdvEnNotation.set(null)">Annuler</button>
+                <button class="btn btn-sm btn-primary" (click)="envoyerAvis(rdv)">Envoyer</button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}

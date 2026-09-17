@@ -1,0 +1,149 @@
+<div class="row g-4">
+  <div class="col-12">
+    @if (localisationEnCours()) {
+      <div class="alert alert-light border d-flex align-items-center gap-2">
+        <span class="spinner-border spinner-border-sm"></span>
+        Détection de votre position…
+      </div>
+    }
+  </div>
+
+  <div class="col-lg-3">
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h2 class="h6 text-muted text-uppercase mb-3">Catégorie</h2>
+        <div class="d-flex flex-column gap-1">
+          @for (cat of categories(); track cat.id) {
+            <button
+              class="btn btn-sm text-start"
+              [class.btn-primary]="categorie() === cat.slug"
+              [class.btn-light]="categorie() !== cat.slug"
+              (click)="basculerCategorie(cat.slug)"
+            >
+              <i class="bi {{ cat.icone }} me-1"></i>{{ cat.nom }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h2 class="h6 text-muted text-uppercase mb-3">Distance max : {{ rayonKm() }} km</h2>
+        <input
+          type="range"
+          class="form-range"
+          min="1"
+          max="50"
+          [value]="rayonKm()"
+          (change)="changerRayon($any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h2 class="h6 text-muted text-uppercase mb-3">Note minimum</h2>
+        <div class="btn-group btn-group-sm w-100">
+          @for (n of [null, 3, 4, 4.5]; track n) {
+            <button
+              class="btn"
+              [class.btn-primary]="noteMin() === n"
+              [class.btn-outline-secondary]="noteMin() !== n"
+              (click)="noteMin.set(n); charger()"
+            >
+              {{ n ? n + '+' : 'Toutes' }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-9">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="text-muted small">{{ resultats().length }} prestataire(s) trouvé(s)</div>
+      <div class="btn-group btn-group-sm">
+        <button
+          class="btn"
+          [class.btn-primary]="tri() === 'distance'"
+          [class.btn-outline-secondary]="tri() !== 'distance'"
+          (click)="changerTri('distance')"
+        >
+          Plus proches
+        </button>
+        <button
+          class="btn"
+          [class.btn-primary]="tri() === 'note'"
+          [class.btn-outline-secondary]="tri() !== 'note'"
+          (click)="changerTri('note')"
+        >
+          Mieux notés
+        </button>
+      </div>
+    </div>
+
+    @if (chargement()) {
+      <div class="text-center py-5"><span class="spinner-border"></span></div>
+    } @else if (resultats().length === 0) {
+      <div class="alert alert-light border">
+        Aucun prestataire disponible dans ce rayon. Essayez d'élargir la distance.
+      </div>
+    } @else {
+      <div class="d-flex flex-column gap-3">
+        @for (p of resultats(); track p.id) {
+          <div class="card border-0 shadow-sm prestataire-card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <a [routerLink]="['/prestataires', p.id]" class="h5 text-decoration-none">
+                    {{ p.nom_activite }}
+                  </a>
+                  <div class="text-muted small mt-1">
+                    {{ p.ville }} · {{ p.distance_km }} km
+                  </div>
+                  <div class="mt-1">
+                    <app-note-etoiles [note]="p.note_moyenne" [nombreAvis]="p.nombre_avis" />
+                  </div>
+                </div>
+                <div class="text-end">
+                  @if (p.tarif_horaire_fcfa) {
+                    <div class="fw-semibold">{{ p.tarif_horaire_fcfa }} FCFA/h</div>
+                  }
+                  <span class="badge" [class.text-bg-success]="p.disponible" [class.text-bg-secondary]="!p.disponible">
+                    {{ p.disponible ? 'Disponible' : 'Indisponible' }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap gap-1 mt-2">
+                @for (cat of p.categories; track cat.id) {
+                  <span class="badge text-bg-light border"><i class="bi {{ cat.icone }} me-1"></i>{{ cat.nom }}</span>
+                }
+              </div>
+
+              <p class="mt-2 mb-2 text-truncate-3">{{ p.bio }}</p>
+
+              <div class="d-flex justify-content-end">
+                <button
+                  class="btn btn-sm btn-primary"
+                  [disabled]="!p.disponible"
+                  (click)="ouvrirReservation(p)"
+                >
+                  <i class="bi bi-calendar-check me-1"></i>Prendre RDV
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<app-reservation-modal
+  [ouvert]="prestataireChoisi() !== null"
+  [prestataire]="prestataireChoisi()"
+  (fermer)="prestataireChoisi.set(null)"
+  (reserve)="prestataireChoisi.set(null)"
+/>

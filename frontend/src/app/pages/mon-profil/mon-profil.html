@@ -1,0 +1,93 @@
+<h1 class="h4 mb-4">Mon profil prestataire</h1>
+
+@if (chargement()) {
+  <div class="text-center py-5"><span class="spinner-border"></span></div>
+} @else {
+  <div class="card border-0 shadow-sm" style="max-width: 720px">
+    <div class="card-body p-4">
+      <form [formGroup]="form" (ngSubmit)="enregistrer()" novalidate>
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label" for="nom_activite">Nom de l'activité</label>
+            <input id="nom_activite" type="text" class="form-control" formControlName="nom_activite" />
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" id="disponible" formControlName="disponible" />
+              <label class="form-check-label" for="disponible">Disponible actuellement</label>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label" for="bio">Présentation</label>
+            <textarea id="bio" class="form-control" rows="3" formControlName="bio"></textarea>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="ville">Ville</label>
+            <input id="ville" type="text" class="form-control" formControlName="ville" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="adresse">Adresse</label>
+            <input id="adresse" type="text" class="form-control" formControlName="adresse" />
+          </div>
+
+          <div class="col-12">
+            <label class="form-label d-block">Position de référence</label>
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              (click)="utiliserMaPosition()"
+              [disabled]="localisationEnCours()"
+            >
+              @if (localisationEnCours()) {
+                <span class="spinner-border spinner-border-sm me-1"></span>
+              } @else {
+                <i class="bi bi-crosshair me-1"></i>
+              }
+              Mettre à jour avec ma position actuelle
+            </button>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="rayon">Rayon d'intervention (km)</label>
+            <input
+              id="rayon"
+              type="number"
+              min="1"
+              max="100"
+              class="form-control"
+              formControlName="rayon_intervention_km"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="tarif">Tarif horaire indicatif (FCFA)</label>
+            <input id="tarif" type="number" min="0" class="form-control" formControlName="tarif_horaire_fcfa" />
+          </div>
+
+          <div class="col-12">
+            <label class="form-label d-block">Catégories de service proposées</label>
+            <div class="d-flex flex-wrap gap-2">
+              @for (cat of categories(); track cat.id) {
+                <button
+                  type="button"
+                  class="btn btn-sm"
+                  [class.btn-primary]="categorieCochee(cat.id)"
+                  [class.btn-outline-secondary]="!categorieCochee(cat.id)"
+                  (click)="basculerCategorie(cat.id)"
+                >
+                  <i class="bi {{ cat.icone }} me-1"></i>{{ cat.nom }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-4" [disabled]="enregistrementEnCours()">
+          @if (enregistrementEnCours()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          Enregistrer
+        </button>
+      </form>
+    </div>
+  </div>
+}
